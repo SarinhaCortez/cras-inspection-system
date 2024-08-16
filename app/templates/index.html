@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Inspector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>  
+    <nav>
+        <div class="navbar-container">
+            <span class="navbar-brand">Panel Inspector</span>
+                <div class="profile-dropdown">
+                    <a href="/profile" class="profile-icon">
+                        <img src="{{ url_for('static', filename='profile.jpg') }}" alt="Profile Picture" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/no-profile-pic.png') }}';">
+                    </a>
+                    <div class="dropdown-content">
+                        <p>User: {{ session['username'] }}</p>
+                        <a href="/profile">See Profile</a>
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </div>
+                </div>
+        </div>
+    </nav>
+    <main>
+        <h1>Analysis of Pictures taken by UAV</h1>
+        <form method="post" action="{{ url_for('predict')}}" enctype="multipart/form-data">
+            <div id="drop-area">
+                <p>Drag and drop files here or click to select files</p>
+                <input type="file" accept="image/*" name="file" id="file" multiple onchange="loadFiles(event)" style="display: none;">
+            </div>
+            <div id="preview-container" class="preview"></div>
+            <div class="button-container">
+                <button type="button" class="btn btn-block tooltip" onclick="handleFolderSelect()">Choose Folder
+                    <span class="tooltiptext">You can submit here a folder containing only images to upload all of its content.</span>
+                </button>
+            </div>
+            <input type="file" id="folder" name="folder" webkitdirectory directory style="display: none;" onchange="loadFiles(event)">
+            <button type="submit" class="btn btn-block" id="predict">Predict Value!</button>
+        </form>
+    </main>  
+    <b>{{ prediction_text }}</b>
+    <footer>
+        ©CRAS | INESC-TEC | 2024
+    </footer>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,4 @@
+__pycache__/
+detr_model/model.safetensors
+logs/
+model_store/
