@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css')}}">
 </head>
 <body>
     <h1>Analysis of Pictures taken by UAV</h1>
@@ -22,6 +23,10 @@
             <button type="submit">Login</button>
         </form>
         <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up here</a></p>
+        {% if error %}
+        <p class="error-message">{{ error }}</p>
+        {% endif %}
     </div>
+    {{footer|safe}}
 </body>
 </html>

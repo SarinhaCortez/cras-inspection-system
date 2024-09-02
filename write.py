@@ -5,6 +5,7 @@ metrics_address=http://127.0.0.1:8082
 enable_token_auth=false
 
 """
+#faz sentido? ou uso só os fixheiros sem wrie nenhum?
 
 with open('config.properties', 'w') as f:
     f.write(conf)

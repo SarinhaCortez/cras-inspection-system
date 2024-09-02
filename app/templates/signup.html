@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css')}}">
 </head>
 <body>
     <h1>Analysis of Pictures taken by UAV</h1>
@@ -19,9 +20,14 @@
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
             </div>
+            <div class="form-group">
+                <label for="password">Confirm Password:</label>
+                <input type="password" id="conf-pw" name="conf-pw" required>
+            </div>
             <button type="submit">Sign Up</button>
         </form>
         <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
     </div>
+    {{footer|safe}}
 </body>
 </html>

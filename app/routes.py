@@ -8,11 +8,13 @@ def init_routes(app):
     
     users = {}  
     
+    #browsing
+    
     @app.route('/', methods=['POST', 'GET'])
     def home():
         if "user" not in session:
             return redirect(url_for('login'))
-        return render_template('index.html')
+        return render_template('index.html', footer=render_footer())
 
     @app.route('/login', methods=['POST', 'GET'])
     def login():
@@ -26,23 +28,28 @@ def init_routes(app):
                 session["user"] = username  # Replace with actual user object
                 return redirect(url_for('home'))
             else:
-                return "Invalid credentials", 401
-        return render_template('login.html')
+                error = "Invalid credentials"
+                return render_template('login.html', error=error, footer=render_footer())
+
+        return render_template('login.html', footer=render_footer())
 
     @app.route('/signup', methods=['POST', 'GET'])
     def signup():
         if request.method == 'POST':
             username = request.form.get('username')
             password = request.form.get('password')
+            conf_pw = request.form.get('conf-pw')
             if username in users:
                 return "User already exists", 400
+            if password != conf_pw:
+                return "Passwords do not match", 400
             hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-            users[username] = {'password': hashed_password}
+            users[username] = [{'password': hashed_password}]
             session['username'] = username
             session['token'] = 'dummy_access_token'  # Replace with actual access token logic
             session["user"] = username  # Replace with actual user object
             return redirect(url_for('home'))
-        return render_template('signup.html')
+        return render_template('signup.html', footer=render_footer())
 
     @app.route('/profile')
     def profile():
@@ -51,7 +58,7 @@ def init_routes(app):
             access_token = session.get('token')
             role = session.get('role')
             username = session.get('username')
-            return render_template('profile.html', user=user, token=access_token, role=role, username=username)
+            return render_template('profile.html', user=user, token=access_token, role=role, username=username, footer=render_footer())
         else:
             return redirect(url_for("login"))
 
@@ -62,7 +69,17 @@ def init_routes(app):
         session.pop("role", None)
         session.pop("user", None)
         return redirect(url_for("login"))
-
+    
+    
+    #template rendering
+    
+    
+    def render_footer():
+        return render_template('_footer.html')
+    
+    
+    #model interaction
+    
     @app.route('/predict', methods=['POST', 'GET'])
     def predict():
         if "user" not in session:

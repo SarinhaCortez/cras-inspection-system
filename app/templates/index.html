@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <title>Panel Inspector</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css')}}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css')}}">
 </head>
 <body>  
     <nav>
         <div class="navbar-container">
             <span class="navbar-brand">Panel Inspector</span>
                 <div class="profile-dropdown">
-                    <a href="/profile" class="profile-icon">
+                    <div class="profile-icon">
                         <img src="{{ url_for('static', filename='profile.jpg') }}" alt="Profile Picture" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/no-profile-pic.png') }}';">
-                    </a>
+                    </div>
                     <div class="dropdown-content">
-                        <p>User: {{ session['username'] }}</p>
+                        <p>{{ session['username'] }}</p>
                         <a href="/profile">See Profile</a>
                         <a href="{{ url_for('logout') }}">Logout</a>
                     </div>
@@ -23,6 +24,7 @@
         </div>
     </nav>
     <main>
+       
         <h1>Analysis of Pictures taken by UAV</h1>
         <form method="post" action="{{ url_for('predict')}}" enctype="multipart/form-data">
             <div id="drop-area">
@@ -40,9 +42,7 @@
         </form>
     </main>  
     <b>{{ prediction_text }}</b>
-    <footer>
-        ©CRAS | INESC-TEC | 2024
-    </footer>
+    {{ footer|safe }}
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

@@ -8,6 +8,15 @@ body {
     height: 100vh;
     margin: 0;
 }
+.error-message{
+    color:red;
+    animation: fadeOut 1s forwards;}
+    @keyframes fadeOut {
+        to {
+            opacity: 0;
+            visibility: hidden;
+        }
+}
 
 .login-container {
     background-color: #fff;

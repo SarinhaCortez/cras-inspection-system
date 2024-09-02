@@ -1,0 +1,27 @@
+body {
+    display: flex;
+    align-self: center;
+    overflow-y: scroll;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: sans-serif;
+    overflow-y: scroll; 
+    flex-direction: column;
+    text-align: center;
+}
+main{
+    width: 60%;
+    margin: 20px;
+    padding: 40px;
+    font-size: 1.2em;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center children horizontally within main */
+    gap: 1em; 
+}
+

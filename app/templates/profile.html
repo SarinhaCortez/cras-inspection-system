@@ -3,12 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css')}}">
     <title>Profile</title>
 </head>
-<body>
-    <h1>Welcome, {{ user }}</h1>
-    <p>Access Token: {{ token }}</p>
-    <p>Role: {{ role }}</p>
-    <p>Username: {{ username }}</p>
+<body>  
+    <nav>
+        <div class="navbar-container">
+            <span class="navbar-brand">Panel Inspector</span>
+                <div class="profile-dropdown">
+                    <div class="profile-icon">
+                        <img src="{{ url_for('static', filename='profile.jpg') }}" alt="Profile Picture" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/no-profile-pic.png') }}';">
+                    </div>
+                    <div class="dropdown-content">
+                        <p>{{ session['username'] }}</p>
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </div>
+                </div>
+        </div>
+    </nav>
+    <main>
+        <h1>Welcome, {{ user }}</h1>
+        <div class="profile-pic">
+            <!--stubbed-->
+            <img src="{{ url_for('static', filename='profile.jpg') }}" alt="Profile Picture" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/no-profile-pic.png') }}';">
+        </div>
+        <p><b>Change profile picture</b></p>
+        <p><b>Role:</b> {{ role }}</p>
+        <p><b>Username:</b> {{ username }}</p>
+    </main>
+    {{ footer|safe }}
 </body>
 </html>
