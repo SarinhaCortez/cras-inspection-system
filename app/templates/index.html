@@ -40,8 +40,8 @@
             <input type="file" id="folder" name="folder" webkitdirectory directory style="display: none;" onchange="loadFiles(event)">
             <button type="submit" class="btn btn-block" id="predict">Predict Value!</button>
         </form>
+        <p>{{ prediction_text }}</p>
     </main>  
-    <b>{{ prediction_text }}</b>
     {{ footer|safe }}
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>

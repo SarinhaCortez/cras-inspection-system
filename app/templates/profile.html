@@ -32,7 +32,40 @@
         <p><b>Change profile picture</b></p>
         <p><b>Role:</b> {{ role }}</p>
         <p><b>Username:</b> {{ username }}</p>
+        <form action="{{ url_for('delete_reports') }}" method="post">
+            <table>
+                <thead>
+                    <tr>
+                        {% if reports %}
+                            <th class="select-all">
+                                <input type="checkbox" onclick="toggleSelectAll(this)">
+                            </th>
+                        {% endif %}
+                        <th>Your Reports</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if reports %}
+                        {% for report in reports %}
+                            <tr>
+                                <td><input type="checkbox" name="report_ids" value="{{ report.report_id }}"></td>
+                                <td><a href="{{ url_for('view_report', report_id=report.report_id) }}">{{ report.name }}</a></td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="2">No reports found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <br>
+            {% if reports %}
+                <button type="submit">Delete Selected</button>
+            {% endif %}
+        </form>
     </main>
     {{ footer|safe }}
+    <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </body>
 </html>

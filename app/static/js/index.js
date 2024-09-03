@@ -23,7 +23,7 @@ function loadFiles(event) {
             imgContainer.appendChild(closeIcon);
             previewContainer.appendChild(imgContainer);
         } else {
-            console.log(`File ${file.name} is not a JPG image and will be ignored.`);
+            console.log(`File ${file.name}  a JPG image and will be ignored.`);
         }
     }
 }

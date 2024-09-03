@@ -22,6 +22,53 @@ main{
     display: flex;
     flex-direction: column; /* Stack children vertically */
     align-items: center; /* Center children horizontally within main */
-    gap: 1em; 
+    gap: 0.2em; 
 }
 
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 20%;
+    overflow-y: auto;
+}
+th, td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-weight: bold;
+}
+td {
+    background-color: #fff;
+}
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+tr:hover {
+    background-color: #e0e0e0;
+}
+.select-all {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+.select-all input {
+    margin: 0;
+    vertical-align: middle;
+}
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+button:hover {
+    background-color: #0056b3;
+}
