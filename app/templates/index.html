@@ -13,10 +13,10 @@
             <span class="navbar-brand">Panel Inspector</span>
                 <div class="profile-dropdown">
                     <div class="profile-icon">
-                        <img src="{{ url_for('static', filename='profile.jpg') }}" alt="Profile Picture" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/no-profile-pic.png') }}';">
+                        <img src="{{ user.pic }}" alt="Profile Picture" class="home"onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/no-profile-pic.png') }}';">
                     </div>
                     <div class="dropdown-content">
-                        <p>{{ session['username'] }}</p>
+                        <p>{{ session['user'] }}</p>
                         <a href="/profile">See Profile</a>
                         <a href="{{ url_for('logout') }}">Logout</a>
                     </div>
@@ -26,10 +26,11 @@
     <main>
        
         <h1>Analysis of Pictures taken by UAV</h1>
-        <form method="post" action="{{ url_for('predict')}}" enctype="multipart/form-data">
+        <h3>Input files or Select a Folder to Start</h3>
+        <form id="predictForm" method="post" action="{{ url_for('predict')}}" enctype="multipart/form-data">
             <div id="drop-area">
                 <p>Drag and drop files here or click to select files</p>
-                <input type="file" accept="image/*" name="file" id="file" multiple onchange="loadFiles(event)" style="display: none;">
+                <input type="file" accept=".jpg, .jpeg, .png" name="multifile" id="file" multiple onchange="loadFiles(event)" style="display: none;">
             </div>
             <div id="preview-container" class="preview"></div>
             <div class="button-container">
@@ -40,7 +41,6 @@
             <input type="file" id="folder" name="folder" webkitdirectory directory style="display: none;" onchange="loadFiles(event)">
             <button type="submit" class="btn btn-block" id="predict">Predict Value!</button>
         </form>
-        <p>{{ prediction_text }}</p>
     </main>  
     {{ footer|safe }}
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>

@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session, url_for
+from flask import Response, make_response, jsonify, request, render_template, redirect, session, url_for
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -6,6 +6,10 @@ import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime as dt
 from app.models import db, User, Report
+import pdfkit
+
+from lxml import etree
+
 
 def init_routes(app):
 
@@ -15,7 +19,8 @@ def init_routes(app):
     def home():
         if "user" not in session:
             return redirect(url_for('login'))
-        return render_template('index.html', footer=render_footer())
+        user = User.query.filter_by(username=session["user"]).first()
+        return render_template('index.html', user=user, footer=render_footer())
 
     @app.route('/login', methods=['POST', 'GET'])
     def login():
@@ -23,17 +28,13 @@ def init_routes(app):
             username = request.form.get('username')
             password = request.form.get('password')
 
-            # Query the User model to find the user by username
             user = User.query.filter_by(username=username).first()
 
             if user and check_password_hash(user.password, password):
-                # Set session variables
-                session['token'] = 'dummy_access_token'  # Replace with actual access token logic
-                session["user"] = username  # Replace with actual user object
-                session["username"] = username
+                session['user'] = username  
+                session['token'] = 'dummy_access_token'  
                 return redirect(url_for('home'))
             else:
-                # Handle invalid credentials
                 error = "Invalid credentials"
                 return render_template('login.html', error=error, footer=render_footer())
 
@@ -43,6 +44,7 @@ def init_routes(app):
     def signup():
         if request.method == 'POST':
             username = request.form.get('username')
+            full_name = request.form.get('full-name')
             password = request.form.get('password')
             conf_pw = request.form.get('conf-pw')
 
@@ -54,37 +56,107 @@ def init_routes(app):
 
             hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
 
-            # Check if the username already exists in the database
             existing_user = User.query.filter_by(username=username).first()
             if existing_user:
                 return "User already exists", 400
 
-            # Create a new user and add to the database
-            new_user = User(username=username, name=username, pic=None, password=hashed_password)
+            new_user = User(username=username, name=full_name, pic=None, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
 
-            # Set session variables
-            session['username'] = username
-            session['token'] = 'dummy_access_token'  # Replace with actual access token logic
-            session["user"] = username  # Replace with actual user object
-
+            session['user'] = username  
+            session['token'] = 'dummy_access_token' 
             return redirect(url_for('home'))
 
         return render_template('signup.html', footer=render_footer())
-    
+
     
     @app.route('/profile')
     def profile():
         if "user" in session:
-            user = session.get("user")
+            user = User.query.filter_by(username=session["user"]).first()
             access_token = session.get('token')
-            role = session.get('role')
-            username = session.get('username')
-            reports = Report.query.filter_by(username=username).order_by(Report.name.desc()).all()
-            return render_template('profile.html', user=user, token=access_token, role=role, username=username, reports=reports, footer=render_footer())
+            reports = Report.query.filter_by(username=session["user"]).order_by(Report.name.desc()).all()
+            return render_template('profile.html', user=user, token=access_token, reports=reports, footer=render_footer())
         else:
             return redirect(url_for("login"))
+        
+    @app.route('/change_profile_pic', methods=['POST'])
+    def change_profile_pic():
+        
+        if 'user' not in session:
+            return redirect(url_for('login'))
+        
+        user = User.query.filter_by(username=session["user"]).first()
+
+        if 'profile_pic' not in request.files:
+            return profile()
+        
+
+        file = request.files['profile_pic']
+        if file.filename == '':
+            return  profile()
+
+        if file:
+            
+            filename = secure_filename(file.filename)
+    
+            rel_path = os.path.join('uploads', filename)
+            
+            abs_path = os.path.join(app.config['UPLOAD_PICS'], filename)
+            if not os.path.exists(app.config['UPLOAD_PICS']):
+                os.makedirs(app.config['UPLOAD_PICS'])
+            file.save(abs_path)
+
+            user.pic = rel_path
+            db.session.commit()
+
+            user.pic = f'static/uploads/profile_pics/{filename}'
+            db.session.commit()
+
+            return redirect(url_for('profile'))
+
+        return "File upload failed", 400
+
+
+    @app.route('/delete_profile_pic', methods=['POST'])
+    def delete_profile_pic():
+        username = session["user"]
+        if not username:
+            return login()
+
+        user = User.query.filter_by(username=username).first()
+        if user and user.pic:
+            pic_path = os.path.join(os.getcwd(),'app', user.pic)
+            if os.path.exists(pic_path):
+                os.remove(pic_path)
+
+            user.pic = None
+            db.session.commit()
+
+        elif not user:
+            return login()
+        
+
+        return profile()
+    
+    @app.route('/delete_account', methods=['POST'])
+    def delete_account():
+        if 'user' not in session:
+            return redirect(url_for('login'))
+
+        username = session.get('user')
+        user = User.query.get(username)
+        if not user:
+            return logout()
+
+        try:
+            db.session.delete(user)
+            db.session.commit()
+            session.clear()
+            return logout()
+        except Exception as e:
+            return f"An error occurred: {e}", 500
 
     @app.route("/logout")
     def logout():
@@ -111,58 +183,63 @@ def init_routes(app):
                 return redirect(url_for('login'))
 
             if request.method == 'POST':
-                image_files = request.files.getlist("file")
-                #if image_files == []:
-                    #return render_template('index.html', footer=render_footer())
+                
                 all_predictions = []
 
-                for image in image_files:
+                multifile = request.files.getlist("multifile")
+                folder = request.files.getlist("folder")
+                
+                file_input = multifile + folder
+
+                #filter_duplicates = []
+                
+                for image in file_input:
+                    
                     if image.filename == '':
                         continue
-
+                    
                     filename = secure_filename(image.filename)
-                    img_path = os.path.join(app.config['IMAGE_UPLOADS'], filename)
-                    if not os.path.exists(app.config['IMAGE_UPLOADS']):
-                        os.makedirs(app.config['IMAGE_UPLOADS'])
-                    # Save the file
+                    img_path = os.path.join(app.config['SAMPLE_UPLOADS'], filename)
+                    if not os.path.exists(app.config['SAMPLE_UPLOADS']):
+                        os.makedirs(app.config['SAMPLE_UPLOADS'])
+
                     image.save(img_path)
 
-                    # Read and send the image
                     with open(img_path, 'rb') as file_data:
                         res = requests.post("http://localhost:8083/predictions/detr", files={'data': file_data})
                         predictions = res.json()
 
                     if "error" in predictions:
-                        prediction_text = f"Error in prediction: {predictions['error']}"
+                        return f"Error in prediction: {predictions['error']}"
                     else:
-                        #prediction_text = process_detr_prediction(predictions)
-
                         all_predictions.append({
                             'filename': filename,
                             'predictions': predictions
                         })
+                        
 
-                    # Delete the image after processing
                     if os.path.exists(img_path):
                         os.remove(img_path)
 
-                # Create a single XML file with sections for each image
-                xml_filename = dt.now().strftime('%Y-%m-%d %H-%M-%S') + '.xml'
-                xml_path = os.path.join(app.config['XML_OUTPUTS'], xml_filename)
+                filename = dt.now().strftime('%Y-%m-%d %H:%M:%S')
+                xml_path = os.path.join(app.config['XML_OUTPUTS'], filename + '.xml')
+                
                 if not os.path.exists(app.config['XML_OUTPUTS']):
                     os.makedirs(app.config['XML_OUTPUTS'])
-                create_xml_file(all_predictions, xml_path)
+                app.logger.info(f"Output directory: {app.config['XML_OUTPUTS']}")
+              
+                try:
+                    create_xml_file(all_predictions, xml_path, filename)
+                except Exception as e:
+                    print(f"Error creating XML file: {e}")
 
                 if "user" in session:
                     username = session.get('user')
-                    save_report_to_db(xml_filename, xml_path, username)
+                    save_report_to_db(filename, xml_path, username)
                 else:
                     return redirect(url_for("login"))
                 
-                if os.path.exists(xml_path):
-                    os.remove(xml_path)
-
-                return profile()
+                return jsonify({'redirect': url_for('profile')}), 200
             
         except FileNotFoundError as e:
             return 'An error occurred while processing the file', 500
@@ -171,26 +248,106 @@ def init_routes(app):
         
     #report management
 
-    @app.route('/report/<int:report_id>', methods=['GET'])
-    def view_report(report_id):
-        report = Report.query.get(report_id)
-        
-        if report is None:
-            abort(404)  # Return a 404 error if the report is not found
-        
-        return render_template('report_detail.html', report=report)
+    @app.route('/report_detail/<int:report_id>', methods=['GET'])
+    def report_detail(report_id):
+        html_str = transform_xml_to_html(report_id)
+        return Response(html_str, content_type='text/html')
     
+    @app.route('/generate_pdf/<int:report_id>', methods=['GET'])
+    def generate_pdf(report_id):
+        
+        report = Report.query.get(report_id)
+
+        html_str = transform_xml_to_html(report_id)
+
+        pdf = pdfkit.from_string(html_str, False)
+
+        response = make_response(pdf)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename={report.name}.pdf'
+
+        return response
+    
+        
     @app.route('/delete-reports', methods=['POST'])
     def delete_reports():
-        report_ids = request.form.getlist('report_ids')  # Get list of report IDs from the form
+        report_ids = request.form.getlist('report_ids')   
         for report_id in report_ids:
             report = Report.query.get(report_id)
             if report:
                 db.session.delete(report)
+                abs_path = os.path.join(app.config['XML_OUTPUTS'], report.name)
+                if os.path.exists(abs_path):
+                    os.remove(abs_path)
         db.session.commit()
         return redirect(url_for('profile'))
-
     
+    import xml.etree.ElementTree as ET
+
+def create_xml_file(all_predictions, output_path, filename):
+    """
+    Function to create a single XML file from a list of predictions for multiple images.
+    """
+    root = ET.Element("YourReport")
+    date = ET.SubElement(root, "Date") 
+    date.text = filename[:10]
+    time = ET.SubElement(root, "Time")
+    time.text = filename[11:]
+
+    label_desc = {0:"VG;MT",1:"LE;ER",  2:"LR;DA", 3:"LE;CR",4:"SF;PO"}
+
+    for image_data in all_predictions:
+        image_section = ET.SubElement(root, "Image")
+        image_filename = ET.SubElement(image_section, "Filename")
+        image_filename.text = image_data.get('filename', '')
+
+        predictions = image_data.get('predictions', {})
+
+        boxes = predictions.get('boxes', [])
+        labels = predictions.get('labels', [])
+        scores = predictions.get('scores', [])
+
+        predictions = []
+        for i in range(len(boxes)):
+            if i < len(labels) and i < len(scores):  
+                for j in range(len(boxes[i])):
+                    if j < len(labels[i]) and j < len(scores[i]):
+                       if(filter(scores[i][j], boxes[i][j][2], boxes[i][j][3])):
+                        predictions.append({
+                            'label': label_desc[labels[i][j]],
+                            'score': round(scores[i][j],3),
+                            'box': [round(i, 2) for i in boxes[i][j]]
+                        })
+                       
+
+        for pred in predictions:
+            prediction_element = ET.SubElement(image_section, "Prediction")
+
+            label_element = ET.SubElement(prediction_element, "Label")
+            label_element.text = str(pred['label'])
+
+            score_element = ET.SubElement(prediction_element, "Score")
+            score_element.text = str(pred['score'])
+
+            box_element = ET.SubElement(prediction_element, "Box")
+            box_element.text = ",".join(map(str, pred['box']))  
+
+
+    try:
+
+        xml_str = ET.tostring(root, encoding='unicode')
+
+        xml_declaration = '<?xml version="1.0" encoding="utf-8"?>\n'
+        xsl_link =  '<?xml-stylesheet type="text/xsl" href="../transform.xsl"?>\n'
+        full_xml_str = xml_declaration + xsl_link + xml_str
+
+        with open(output_path, 'w', encoding='utf-8-sig') as f:
+            f.write(full_xml_str)
+
+        print(f"XML file successfully created at {output_path}")
+
+    except Exception as e:
+        print(f"Failed to write XML file: {e}")
 
 """ 
     def process_detr_prediction(prediction):
@@ -208,74 +365,43 @@ def init_routes(app):
 
         return " | ".join(results)
 """
+
 #report creation
 
-def create_xml_file(all_predictions, output_path):
-    """
-    Function to create a single XML file from a list of predictions for multiple images.
-    """
-    # Create the root element
-    root = ET.Element("YourData")
-
-    # Process each image's predictions
-    for image_data in all_predictions:
-        image_section = ET.SubElement(root, "Image")
-        image_filename = ET.SubElement(image_section, "Filename")
-        image_filename.text = image_data['filename']
-
-        predictions = image_data['predictions']
-
-        # Extract boxes, labels, and scores from prediction data
-        boxes = predictions.get('boxes', [])
-        labels = predictions.get('labels', [])
-        scores = predictions.get('scores', [])
-
-        # Collect predictions into a list of dictionaries
-        sorted_predictions = []
-        for i in range(len(boxes)):
-            for j in range(len(boxes[i])):
-                sorted_predictions.append({
-                    'label': labels[i][j],
-                    'score': scores[i][j],
-                    'box': boxes[i][j]
-                })
-
-        # Sort the list by label
-        sorted_predictions = sorted(sorted_predictions, key=lambda x: x['label'])
-
-        # Create XML elements for each sorted prediction
-        for pred in sorted_predictions:
-            prediction_element = ET.SubElement(image_section, "Prediction")
-
-            # Create elements for label, score, and box
-            label_element = ET.SubElement(prediction_element, "Label")
-            label_element.text = str(pred['label'])
-
-            score_element = ET.SubElement(prediction_element, "Score")
-            score_element.text = str(pred['score'])
-
-            box_element = ET.SubElement(prediction_element, "Box")
-            box_element.text = ",".join(map(str, pred['box']))  # Join list items as comma-separated string
-
-    # Write the XML to a file
-    tree = ET.ElementTree(root)
-    tree.write(output_path, encoding='utf-8', xml_declaration=True)
-
-    
 
 def save_report_to_db(name, output_path, username):
     """
     Save the report entry to the database.
     """
+    rel_path = "app/static/xmls/" + name + '.xml'
     try:
         new_report = Report(
             name=name,
-            content=output_path,
+            content=rel_path,
             username=username
         )
         db.session.add(new_report)
         db.session.commit()
-        print("Report saved successfully.")
     except Exception as e:
         db.session.rollback()
         print(f"An error occurred while saving the report: {e}")
+
+def filter(score, bbox_width, bbox_height):
+    
+    bbox_area_normalized = bbox_width * bbox_height
+    
+    return ((bbox_width < 0.50) and (bbox_height < 0.5) and (score >= 0.25))
+
+def transform_xml_to_html(report_id):
+    report = Report.query.get(report_id)
+
+    xml_file = report.content
+    xslt_file = 'app/static/transform.xsl'
+
+    xml_tree = etree.parse(xml_file)
+    xslt_tree = etree.parse(xslt_file)
+
+    transform = etree.XSLT(xslt_tree)
+    result_html = transform(xml_tree)
+
+    return str(result_html)

@@ -4,17 +4,17 @@ body {
     overflow-y: scroll;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     margin: 0;
+    height: 100vh;
     font-family: sans-serif;
-    overflow-y: scroll; 
-    flex-direction: column;
+    overflow-y: scroll;
     text-align: center;
 }
+
 main{
     width: 60%;
     margin: 20px;
-    padding: 40px;
+    padding: 60px;
     font-size: 1.2em;
     background-color: #fff;
     border-radius: 10px;
@@ -23,13 +23,16 @@ main{
     flex-direction: column; /* Stack children vertically */
     align-items: center; /* Center children horizontally within main */
     gap: 0.2em; 
+    overflow-y: auto;
+    max-height: 80%;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     border-radius: 20%;
-    overflow-y: auto;
+    overflow-y: scroll;
+    max-height:30%;
 }
 th, td {
     padding: 12px;
@@ -41,9 +44,11 @@ th {
     color: #333;
     font-weight: bold;
 }
+
 td {
     background-color: #fff;
 }
+
 tr:nth-child(even) {
     background-color: #f9f9f9;
 }
@@ -71,4 +76,31 @@ button {
 }
 button:hover {
     background-color: #0056b3;
+}
+
+.profile-pic {
+    width: 128px;  /* Width of the circular container */
+    height: 128px; /* Height of the circular container */
+    border-radius: 50%;  /* Makes the container circular */
+    border: 2px solid white;  /* Adds a white border around the circular container */
+    background-color: white;  /* Sets the background color of the circular container */
+    display: flex;  /* Enables flexbox layout for the container */
+    align-items: center;  /* Centers image vertically */
+    justify-content: center;  /* Centers image horizontally */
+    cursor: pointer;
+}
+
+.profile-pic img {
+    width: 100%;  /* Forces the image to scale to the width of the container */
+    height: 100%;  /* Forces the image to scale to the height of the container */
+    object-fit: cover;  /* Ensures the image fills the entire container, potentially cropping */
+    border-radius: 50%;  /* Ensures the image conforms to the circular shape of the container */
+}
+
+.delete-profile-pic-link, 
+.delete-account-link{
+    text-decoration: none;
+    color: blue;
+    cursor: pointer;
+    font-size: 0.8em;
 }

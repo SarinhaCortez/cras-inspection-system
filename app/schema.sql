@@ -11,5 +11,5 @@ CREATE TABLE reports (
     name TEXT NOT NULL,                         -- Title of the report
     content TEXT NOT NULL,                       -- Content of the report
     username TEXT NOT NULL,                      -- Foreign key to the 'users' table
-    FOREIGN KEY (username) REFERENCES users(username) -- Enforce referential integrity
+    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE-- Enforce referential integrity
 );

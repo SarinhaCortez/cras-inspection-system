@@ -10,8 +10,9 @@ def create_app():
     app.secret_key = secrets.token_hex(16)
     app.permanent_session_lifetime = timedelta(days=1)
 
-    app.config['IMAGE_UPLOADS'] = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
+    app.config['SAMPLE_UPLOADS'] = os.path.join(os.getcwd(), 'app', 'static', 'uploads', 'sample')
     app.config['XML_OUTPUTS'] = os.path.join(os.getcwd(), 'app', 'static', 'xmls')
+    app.config['UPLOAD_PICS'] = os.path.join(os.getcwd(),'app', 'static','uploads','profile_pics')
 
     
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

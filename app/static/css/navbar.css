@@ -20,6 +20,8 @@ nav {
   .navbar-brand {
     font-size: 20px;
     font-weight: bold;
+    text-decoration: none;
+    color: white;
   }
   
   
@@ -56,21 +58,8 @@ nav {
     border: 2px solid white;
     background-color: white;
     cursor: pointer;
-    top: -10px;
   }
   
-  
-  .profile-icon img {
-    position: relative;
-    width: 40px; /* Adjust size as needed */
-    height: 40px; /* Adjust size as needed */
-    border-radius: 50%; /* Make it a circle */
-    object-fit: cover; /* Ensure the image covers the circle */
-    border: 2px solid white; /* Add a white border */
-    background-color: white; /* Ensure the border is visible */
-    cursor: pointer;
-    top: -10px;
-  }
   
   .profile-dropdown {
     position: relative;

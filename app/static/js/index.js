@@ -5,7 +5,7 @@ function loadFiles(event) {
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        if (file.type === 'image/jpeg') {
+        if (file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png') {
             const imgContainer = document.createElement('div');
             imgContainer.classList.add('img-container');
 
@@ -23,9 +23,13 @@ function loadFiles(event) {
             imgContainer.appendChild(closeIcon);
             previewContainer.appendChild(imgContainer);
         } else {
-            console.log(`File ${file.name}  a JPG image and will be ignored.`);
+            console.log(`File ${file.name} is not a JPG image and will be ignored.`);
         }
     }
+}
+
+function handleFolderSelect() {
+    document.getElementById('folder').click();
 }
 
 function handleDrop(event) {
@@ -50,10 +54,6 @@ function handleDragLeave(event) {
 
 function handleClick() {
     document.getElementById('file').click();
-}
-
-function handleFolderSelect() {
-    document.getElementById('folder').click();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -89,9 +89,6 @@ function handleClick() {
     document.getElementById('file').click();
 }
 
-function handleFolderSelect() {
-    document.getElementById('folder').click();
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const dropArea = document.getElementById('drop-area');
@@ -100,4 +97,38 @@ document.addEventListener('DOMContentLoaded', function() {
     dropArea.addEventListener('dragover', handleDragOver);
     dropArea.addEventListener('dragleave', handleDragLeave);
     dropArea.addEventListener('click', handleClick);
+});
+
+document.getElementById('predictForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    var form = event.target;
+    var button = document.getElementById('predict');
+    
+    button.disabled = true;
+    button.textContent = 'Processing...';
+
+    var formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json()) 
+    .then(data => {
+        console.log('Success:', data);
+        button.disabled = false;
+        button.textContent = 'Predict Value!';
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        }
+        
+    })
+    .catch(error => {
+        console.error('Error:', error);
+
+        button.disabled = false;
+        button.textContent = 'Predict Value!';
+        
+    });
 });

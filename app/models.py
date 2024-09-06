@@ -15,6 +15,6 @@ class Report(db.Model):
     __tablename__ = 'reports'
     report_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    content = db.Column(db.Text, nullable=True)
     username = db.Column(db.String(80), db.ForeignKey('users.username'), nullable=False)
     user = db.relationship('User', backref=db.backref('reports', lazy=True))
