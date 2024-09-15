@@ -71,15 +71,12 @@ class DetrHandler(BaseHandler):
             image_tensor = image_tensor.to(self.device)
             pixel_mask_tensor = pixel_mask_tensor.to(self.device)
 
-
             with torch.no_grad():
                 output = self.model(pixel_values=image_tensor, pixel_mask=pixel_mask_tensor)
 
                 required_keys = {'logits', 'pred_boxes'}
                 if not required_keys.issubset(output.keys()):
                     raise KeyError(f"Model output missing required keys: {required_keys - output.keys()}")
-
-                
 
                 # convert to CPU and numpy format for postprocessing
                 output_np = {}

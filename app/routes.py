@@ -387,9 +387,6 @@ def save_report_to_db(name, output_path, username):
         print(f"An error occurred while saving the report: {e}")
 
 def filter(score, bbox_width, bbox_height):
-    
-    bbox_area_normalized = bbox_width * bbox_height
-    
     return ((bbox_width < 0.50) and (bbox_height < 0.5) and (score >= 0.25))
 
 def transform_xml_to_html(report_id):

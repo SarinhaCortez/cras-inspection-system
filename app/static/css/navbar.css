@@ -24,31 +24,7 @@ nav {
     color: white;
   }
   
-  
-  
-  .img-container img {
-    display: block;
-    max-width: 100px;
-    max-height: 100px;
-  }
-  
-  .close-icon {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: none;
-    opacity: 0.7;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 2px 5px;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    text-align: center;
-  }
-  
+ 
   .profile-icon img {
     position: relative;
     width: 40px;
