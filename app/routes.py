@@ -208,6 +208,9 @@ def init_routes(app):
                     with open(img_path, 'rb') as file_data:
                         res = requests.post("http://localhost:8083/predictions/detr", files={'data': file_data})
                         predictions = res.json()
+                        
+                    if os.path.exists(img_path):
+                        os.remove(img_path)
 
                     if "error" in predictions:
                         return f"Error in prediction: {predictions['error']}"
@@ -217,12 +220,11 @@ def init_routes(app):
                             'predictions': predictions
                         })
                         
-
-                    if os.path.exists(img_path):
-                        os.remove(img_path)
+                    
 
                 filename = dt.now().strftime('%Y-%m-%d %H:%M:%S')
                 xml_path = os.path.join(app.config['XML_OUTPUTS'], filename + '.xml')
+
                 
                 if not os.path.exists(app.config['XML_OUTPUTS']):
                     os.makedirs(app.config['XML_OUTPUTS'])
@@ -294,13 +296,13 @@ def create_xml_file(all_predictions, output_path, filename):
     time = ET.SubElement(root, "Time")
     time.text = filename[11:]
 
-    label_desc = {0:"VG;MT",1:"LE;ER",  2:"LR;DA", 3:"LE;CR",4:"SF;PO"}
+    label_desc = {0:"Vertex Generator; Missing Teeth",1:"Leading Edge; Erosion",  2:"Lightning Receptor; Damage", 3:"Leading Edge;Crack",4:"Surface; Paint-Off"}
 
     for image_data in all_predictions:
         image_section = ET.SubElement(root, "Image")
         image_filename = ET.SubElement(image_section, "Filename")
-        image_filename.text = image_data.get('filename', '')
 
+        image_filename.text = image_data.get('filename', '')
         predictions = image_data.get('predictions', {})
 
         boxes = predictions.get('boxes', [])
@@ -331,8 +333,9 @@ def create_xml_file(all_predictions, output_path, filename):
 
             box_element = ET.SubElement(prediction_element, "Box")
             box_element.text = ",".join(map(str, pred['box']))  
-
-
+            
+            
+ 
     try:
 
         xml_str = ET.tostring(root, encoding='unicode')

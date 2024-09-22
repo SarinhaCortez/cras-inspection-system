@@ -1,13 +1,11 @@
 body {
     display: flex;
     align-self: center;
-    overflow-y: scroll;
     justify-content: center;
     align-items: center;
     margin: 0;
     height: 100vh;
     font-family: sans-serif;
-    overflow-y: scroll;
     text-align: center;
 }
 
@@ -23,15 +21,18 @@ main{
     flex-direction: column; /* Stack children vertically */
     align-items: center; /* Center children horizontally within main */
     gap: 0.2em; 
-    overflow-y: auto;
     max-height: 80%;
+}
+
+
+.reports{
+    overflow-y: scroll;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     border-radius: 20%;
-    overflow-y: scroll;
     max-height:30%;
 }
 th, td {

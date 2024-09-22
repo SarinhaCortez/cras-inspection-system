@@ -24,6 +24,10 @@
           th {
               background-color: #f2f2f2;
           }
+          table td:first-child,
+          table th:first-child {
+            width: 600px; 
+          }
         </style>
         </head>
       <body>
@@ -48,7 +52,6 @@
 
   <xsl:template match="Image[count(Prediction) > 0]">
     <p><strong>Filename: </strong><xsl:value-of select="Filename" /></p>
-    
     <table>
       <thead>
         <tr>

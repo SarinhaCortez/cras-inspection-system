@@ -39,8 +39,9 @@
         </form>
         {% endif %}
         <p><b>Username:</b> {{ session['user'] }}</p>
-        <form action="{{ url_for('delete_reports') }}" method="post">
-            <h2>Your Reports</h2>
+        <h2>Your Reports</h2>
+        <form class="reports"  action="{{ url_for('delete_reports') }}" method="post">
+            
             <table>
                 <thead>
                     <tr>
@@ -66,7 +67,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="2">No reports found.</td>
+                            <td colspan="3">No reports found.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -76,6 +77,7 @@
                 <button type="submit">Delete Selected</button>
             {% endif %}
         </form>
+        
         <p><b>Account Management</b></p>
         <form id="delete-account-form" action="{{ url_for('delete_account') }}" method="POST" style="display: none;">
         </form>
